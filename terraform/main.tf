@@ -112,3 +112,64 @@ import {
   to = module.eks.module.kms.aws_kms_alias.this["cluster"]
   id = "alias/eks/project-bedrock-cluster"
 }
+
+# 5. Managed RDS (PostgreSQL)
+resource "aws_db_instance" "postgres" {
+  allocated_storage    = 20
+  identifier           = "retail-db-postgres"
+  db_subnet_group_name = module.vpc.database_subnet_group_name
+  engine               = "postgres"
+  engine_version       = "15"
+  instance_class       = "db.t3.micro"
+  db_name              = "assets"
+  username             = "postgres"
+  password             = "SecurePassPostgres123!"
+  skip_final_snapshot  = true
+  vpc_security_group_ids = [aws_security_group.db_sg.id]
+}
+
+# 6. Managed DynamoDB Table
+resource "aws_dynamodb_table" "retail_cart" {
+  name           = "retail-cart-table"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+}
+
+# 7. Serverless Image Processor Environment
+resource "aws_lambda_function" "asset_processor" {
+  filename      = "lambda/processor.zip" # We will create this directory/zip next
+  function_name = "bedrock-asset-processor"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "index.handler"
+  runtime       = "python3.11"
+
+  environment {
+    variables = {
+      PROJECT = "karatu-2025-capstone"
+    }
+  }
+}
+
+# 8. S3 Bucket Notification Trigger to Lambda
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket = "bedrock-assets-alt-soe-025-4138"
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.asset_processor.arn
+    events              = ["s3:ObjectCreated:*"]
+  }
+  depends_on = [aws_lambda_permission.allow_s3_bucket]
+}
+
+resource "aws_lambda_permission" "allow_s3_bucket" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.asset_processor.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = "arn:aws:indigo::127259106152:bedrock-assets-alt-soe-025-4138"
+}
