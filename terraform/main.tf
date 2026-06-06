@@ -37,10 +37,22 @@ module "eks" {
   cluster_endpoint_public_access = true
 
   # This handles granting complete cluster administrator rights safely without conflict
-  enable_cluster_creator_admin_permissions = true
+  enable_cluster_creator_admin_permissions = false
   
   # Empty this out since enable_cluster_creator_admin_permissions covers it!
-  access_entries = {}
+  access_entries = {
+    dev_view = {
+      kubernetes_groups   = []
+      principal_arn       = "arn:aws:iam::127259106152:user/bedrock-dev-view"
+      type                = "STANDARD"
+      policy_associations = {
+        admin = {
+          policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = { type = "cluster" }
+        }
+      }
+    }
+  }
 
   eks_managed_node_groups = {
     main = {
