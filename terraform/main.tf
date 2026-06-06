@@ -56,7 +56,6 @@ resource "aws_db_instance" "mysql" {
   username             = "admin"
   password             = "SecurePass123!" # In Prod, use Secrets Manager
   skip_final_snapshot  = true
-  db_subnet_group_name = module.vpc.database_subnet_group_name
   vpc_security_group_ids = [aws_security_group.db_sg.id]
 }
 
