@@ -112,8 +112,3 @@ import {
   to = module.eks.module.kms.aws_kms_alias.this["cluster"]
   id = "alias/eks/project-bedrock-cluster"
 }
-
-import {
-  to = module.eks.aws_eks_access_entry.this["dev_view"]
-  id = "project-bedrock-cluster:arn:aws:iam::127259106152:user/bedrock-dev-view"
-}
