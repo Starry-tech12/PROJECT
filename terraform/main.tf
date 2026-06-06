@@ -16,7 +16,7 @@ module "vpc" {
   azs             = ["us-east-1a", "us-east-1b"]
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24"]
-  database_subnets           = ["10.0.201.0/24", "10.0.202.0/24"]
+  database_subnets             = ["10.0.201.0/24", "10.0.202.0/24"]
   create_database_subnet_group = true
 
   enable_nat_gateway = true
@@ -25,20 +25,6 @@ module "vpc" {
 
 # 2. EKS Cluster
 module "eks" {
-  enable_cluster_creator_admin_permissions = true
-  access_entries = {
-    dev_view = {
-      principal_arn     = "arn:aws:iam::127259106152:user/bedrock-dev-view"
-      type              = "STANDARD"
-      policy_associations = {
-        admin = {
-          policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = { type = "cluster" }
-        }
-      }
-    }
-  }
-  cluster_endpoint_public_access = true
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
 
@@ -47,6 +33,25 @@ module "eks" {
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
+
+  cluster_endpoint_public_access = true
+
+  # CRITICAL ACCESS CONTROL: Grants your local terminal complete admin access
+  enable_cluster_creator_admin_permissions = true
+  
+  access_entries = {
+    dev_view = {
+      kubernetes_groups   = []
+      principal_arn       = "arn:aws:iam::127259106152:user/bedrock-dev-view"
+      type                = "STANDARD"
+      policy_associations = {
+        admin = {
+          policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = { type = "cluster" }
+        }
+      }
+    }
+  }
 
   eks_managed_node_groups = {
     main = {
@@ -61,16 +66,16 @@ module "eks" {
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 }
 
-# 3. Managed RDS (Example for MySQL)
+# 3. Managed RDS (MySQL)
 resource "aws_db_instance" "mysql" {
   allocated_storage    = 20
   identifier           = "retail-db-mysql"
   db_subnet_group_name = module.vpc.database_subnet_group_name
   engine               = "mysql"
-  instance_class       = "db.t3.micro" # Cost saving
+  instance_class       = "db.t3.micro" 
   db_name              = "retail"
   username             = "admin"
-  password             = "SecurePass123!" # In Prod, use Secrets Manager
+  password             = "SecurePass123!" 
   skip_final_snapshot  = true
   vpc_security_group_ids = [aws_security_group.db_sg.id]
 }
@@ -85,19 +90,18 @@ resource "aws_security_group" "db_sg" {
     security_groups = [module.eks.node_security_group_id]
   }
 }
-# Keep this one (Since you didn't delete the S3 Bucket)
+
+# 4. Resource State Imports
 import {
   to = aws_s3_bucket.assets
   id = "bedrock-assets-alt-soe-025-4138"
 }
 
-# Keep this one (Since you didn't delete the IAM User)
 import {
   to = aws_iam_user.dev_view
   id = "bedrock-dev-view"
 }
 
-# === MAKE SURE THE LAMBDA AND KMS IMPORT BLOCKS ARE COMPLETELY DELETED FROM THIS FILE ===
 import {
   to = aws_iam_role.lambda_role
   id = "bedrock-lambda-execution-role"
