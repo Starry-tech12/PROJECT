@@ -49,6 +49,7 @@ module "eks" {
 resource "aws_db_instance" "mysql" {
   allocated_storage    = 20
   identifier           = "retail-db-mysql"
+  db_subnet_group_name = module.vpc.database_subnet_group_name
   engine               = "mysql"
   instance_class       = "db.t3.micro" # Cost saving
   db_name              = "retail"
@@ -82,3 +83,12 @@ import {
 }
 
 # === MAKE SURE THE LAMBDA AND KMS IMPORT BLOCKS ARE COMPLETELY DELETED FROM THIS FILE ===
+import {
+  to = aws_iam_role.lambda_role
+  id = "bedrock-lambda-execution-role"
+}
+
+import {
+  to = module.eks.module.kms.aws_kms_alias.this["cluster"]
+  id = "alias/eks/project-bedrock-cluster"
+}
