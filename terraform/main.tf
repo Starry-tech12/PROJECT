@@ -69,3 +69,15 @@ resource "aws_security_group" "db_sg" {
     security_groups = [module.eks.node_security_group_id]
   }
 }
+
+# Tell Terraform to adopt the existing S3 Bucket
+import {
+  to = aws_s3_bucket.assets
+  id = "bedrock-assets-alt-soe-025-4138"
+}
+
+# Tell Terraform to adopt the existing IAM User
+import {
+  to = aws_iam_user.dev_view
+  id = "bedrock-dev-view"
+}
