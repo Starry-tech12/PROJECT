@@ -12,8 +12,3 @@ variable "cluster_name" {
   type    = string
   default = "project-bedrock-cluster"
 }
-
-variable "student_id" {
-  type        = string
-  description = "Your unique student ID/Name for bucket suffixing"
-}
