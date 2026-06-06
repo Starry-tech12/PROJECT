@@ -25,6 +25,7 @@ module "vpc" {
 
 # 2. EKS Cluster
 module "eks" {
+  cluster_endpoint_public_access = true
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
 
