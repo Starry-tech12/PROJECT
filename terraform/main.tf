@@ -36,10 +36,8 @@ module "eks" {
 
   cluster_endpoint_public_access = true
 
-  # This handles granting complete cluster administrator rights safely without conflict
   enable_cluster_creator_admin_permissions = false
   
-  # Empty this out since enable_cluster_creator_admin_permissions covers it!
   access_entries = {
     dev_view = {
       kubernetes_groups   = []
@@ -112,7 +110,6 @@ import {
   to = module.eks.module.kms.aws_kms_alias.this["cluster"]
   id = "alias/eks/project-bedrock-cluster"
 }
-
 # 5. Managed RDS (PostgreSQL)
 resource "aws_db_instance" "postgres" {
   allocated_storage    = 20
