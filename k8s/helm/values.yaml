@@ -1,0 +1,36 @@
+# Custom values overriding the data layer to point at AWS Managed Services
+
+# Forcefully disable the in-cluster statefulset database pods
+mysql:
+  enabled: false
+postgres:
+  enabled: false
+dynamodb:
+  enabled: false
+
+# 1. Catalog Service -> Configured to use AWS RDS MySQL
+catalog:
+  database:
+    type: mysql
+    endpoint: "retail-db-mysql.ca5i4s0gibub.us-east-1.rds.amazonaws.com:3306"
+    name: "retail"
+    secretName: "retail-db-credentials"
+    usernameKey: "username"
+    passwordKey: "password"
+
+# 2. Carts Service -> Configured to use AWS DynamoDB
+carts:
+  database:
+    type: dynamodb
+    table: "retail-cart-table"
+    region: "us-east-1"
+
+# 3. Orders Service -> Configured to use AWS RDS PostgreSQL
+orders:
+  database:
+    type: postgres
+    endpoint: "retail-db-postgres.ca5i4s0gibub.us-east-1.rds.amazonaws.com:5432"
+    name: "assets"
+    secretName: "retail-postgres-credentials"
+    usernameKey: "username"
+    passwordKey: "password"
