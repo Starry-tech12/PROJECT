@@ -1,0 +1,18 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::127259106152:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/E3E9DE28D4EE021F339A2A6B389CAF37"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "oidc.eks.us-east-1.amazonaws.com/id/E3E9DE28D4EE021F339A2A6B389CAF37:sub": "system:serviceaccount:retail-app:retail-store-carts",
+          "oidc.eks.us-east-1.amazonaws.com/id/E3E9DE28D4EE021F339A2A6B389CAF37:aud": "sts.amazonaws.com"
+        }
+      }
+    }
+  ]
+}
