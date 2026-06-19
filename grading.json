@@ -18,5 +18,10 @@
     "sensitive": false,
     "type": "string",
     "value": "vpc-0884a7a345a7198c8"
+  },
+  "assets_bucket_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "bedrock-assets-alt-soe-025-4138"
   }
 }
