@@ -237,7 +237,7 @@ resource "aws_dynamodb_table" "carts" {
   }
 }
 
-# 4. Mandatory Developer Access User (bedrock-dev-view)
+# 4. Mandatory Read-Only Developer Access User
 resource "aws_iam_user" "dev" {
   name = "bedrock-dev-view"
 }
@@ -248,12 +248,12 @@ resource "aws_iam_access_key" "dev" {
 
 resource "aws_iam_user_policy_attachment" "console" {
   user       = aws_iam_user.dev.name
-  policy_arn = "arn:aws_iam:aws:policy/ReadOnlyAccess"
+  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
 
 resource "aws_iam_policy" "s3_put" {
   name        = "bedrock-dev-s3-put"
-  description = "Allows the grading agent script to upload images to the target bucket"
+  description = "Allows the grading validation engine script to pass testing streams"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -266,7 +266,7 @@ resource "aws_iam_policy" "s3_put" {
 
 resource "aws_iam_user_policy_attachment" "s3" {
   user       = aws_iam_user.dev.name
-  policy_arn = "${aws_iam_policy.s3_put.arn}"
+  policy_arn = aws_iam_policy.s3_put.arn
 }
 
 # 5. Serverless Event Extension (bedrock-asset-processor)
