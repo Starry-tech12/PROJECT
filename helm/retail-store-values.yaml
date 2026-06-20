@@ -1,0 +1,41 @@
+tags:
+  mysql: false      # Strips out insecure in-cluster container database elements
+  postgresql: false # Strips out insecure in-cluster container database elements
+
+catalog:
+  database:
+    endpoint: "rds-mysql-catalog.xxxxxxxxx.us-east-1.rds.amazonaws.com:3306"
+    name: "catalog"
+    secretName: "database-credentials"
+    secretKeys:
+      username: "mysql-username"
+      password: "mysql-password"
+
+orders:
+  database:
+    endpoint: "rds-postgres-orders.xxxxxxxxx.us-east-1.rds.amazonaws.com:5432"
+    name: "orders"
+    secretName: "database-credentials"
+    secretKeys:
+      username: "postgres-username"
+      password: "postgres-password"
+
+carts:
+  awsRegion: "us-east-1"
+  dynamodb:
+    table: "retail-store-carts"
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:[YOUR_NEW_ACCOUNT_ID]:certificate/XXXXXXXX"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+  hosts:
+    - host: retail.alt-soe-025-4138.nip.io
+      paths:
+        - path: /
+          pathType: Prefix

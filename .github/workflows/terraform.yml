@@ -1,39 +1,54 @@
-name: Project Bedrock IaC
+name: "Project Bedrock Core Pipeline"
+
 on:
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
   push:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: "us-east-1"
 
 jobs:
-  terraform:
+  terraform-lifecycle:
     runs-on: ubuntu-latest
-    
-    # Add this defaults section to point to your terraform folder
     defaults:
       run:
         working-directory: ./terraform
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: hashicorp/setup-terraform@v2
+      - name: Checkout Code Context
+        uses: actions/checkout@v4
 
-      - name: Terraform Init
+      - name: Setup Terraform Binary
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.3"
+
+      - name: Lint Format Verification
+        run: terraform fmt -check
+
+      - name: Initialize Remote S3 Workspace
         run: terraform init
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Terraform Plan
+      - name: Generate Structural Plan
+        id: plan
         if: github.event_name == 'pull_request'
-        run: terraform plan -no-color
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform plan -no-color -out=tfplan
 
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
+      - name: Deploy Live Environment Changes
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
