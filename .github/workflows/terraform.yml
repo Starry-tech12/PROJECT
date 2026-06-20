@@ -41,6 +41,11 @@ jobs:
       - name: Lint Format Verification
         run: terraform fmt -check
 
+      - name: Create S3 State Bucket if Missing
+        run: |
+          aws s3api head-bucket --bucket innovatemart-tfstate-alt-soe-025-4138 2>/dev/null || \
+          aws s3api create-bucket --bucket innovatemart-tfstate-alt-soe-025-4138 --region us-east-1
+
       - name: Initialize Remote S3 Workspace
         run: terraform init
 
