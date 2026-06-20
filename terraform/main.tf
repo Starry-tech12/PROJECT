@@ -251,7 +251,7 @@ resource "aws_iam_user_policy_attachment" "console" {
   policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
 
-resource = ["arn:aws:s3:::bedrock-assets-alt-soe-025-4138-cap/*"] {
+resource "aws_iam_policy" "s3_put" {
   name        = "bedrock-dev-s3-put"
   description = "Allows the grading validation engine script to pass testing streams"
   policy = jsonencode({
@@ -259,7 +259,7 @@ resource = ["arn:aws:s3:::bedrock-assets-alt-soe-025-4138-cap/*"] {
     Statement = [{
       Effect   = "Allow"
       Action   = ["s3:PutObject"]
-      Resource = ["arn:aws:s3:::bedrock-assets-alt-soe-025-4138/*"]
+      Resource = ["arn:aws:s3:::bedrock-assets-alt-soe-025-4138-cap/*"]
     }]
   })
 }
