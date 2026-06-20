@@ -24,6 +24,7 @@ env:
 
 jobs:
   terraform-lifecycle:
+    name: "Infrastructure Automation"
     runs-on: ubuntu-latest
     defaults:
       run:
