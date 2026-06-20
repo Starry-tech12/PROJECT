@@ -266,7 +266,7 @@ resource "aws_iam_policy" "s3_put" {
 
 resource "aws_iam_user_policy_attachment" "s3" {
   user       = aws_iam_user.dev.name
-  policy_arn = aws_iam_policy.s3_put.arn
+  policy_arn = "${aws_iam_policy.s3_put.arn}"
 }
 
 # 5. Serverless Event Extension (bedrock-asset-processor)
