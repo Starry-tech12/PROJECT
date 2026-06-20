@@ -327,3 +327,13 @@ resource "aws_s3_bucket_notification" "trigger" {
   }
   depends_on = [aws_lambda_permission.allow_s3]
 }
+
+import {
+  to = aws_iam_user.dev
+  id = "bedrock-dev-view"
+}
+
+import {
+  to = aws_s3_bucket.assets
+  id = "bedrock-assets-alt-soe-025-4138"
+}
