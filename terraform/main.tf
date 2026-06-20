@@ -251,7 +251,7 @@ resource "aws_iam_user_policy_attachment" "console" {
   policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
 
-resource "aws_iam_policy" "s3_put" {
+resource = ["arn:aws:s3:::bedrock-assets-alt-soe-025-4138-cap/*"] {
   name        = "bedrock-dev-s3-put"
   description = "Allows the grading validation engine script to pass testing streams"
   policy = jsonencode({
@@ -271,7 +271,7 @@ resource "aws_iam_user_policy_attachment" "s3" {
 
 # 5. Serverless Event Extension (bedrock-asset-processor)
 resource "aws_s3_bucket" "assets" {
-  bucket        = "bedrock-assets-alt-soe-025-4138"
+  bucket        = "bedrock-assets-alt-soe-025-4138-cap"
   force_destroy = true
 }
 
@@ -331,9 +331,4 @@ resource "aws_s3_bucket_notification" "trigger" {
 import {
   to = aws_iam_user.dev
   id = "bedrock-dev-view"
-}
-
-import {
-  to = aws_s3_bucket.assets
-  id = "bedrock-assets-alt-soe-025-4138"
 }
