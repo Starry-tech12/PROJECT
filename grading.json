@@ -1,27 +1,44 @@
 {
-  "cluster_endpoint": {
-    "sensitive": false,
-    "type": "string",
-    "value": "https://E3E9DE28D4EE021F339A2A6B389CAF37.gr7.us-east-1.eks.amazonaws.com"
+  "project": "karatu-2025-capstone",
+  "student_id": "ALT/SOE/025/4138",
+  "github_profile": "Starry-tech12",
+  "orchestration": {
+    "provider": "AWS EKS",
+    "cluster_name": "project-bedrock-cluster",
+    "region": "us-east-1",
+    "k8s_version": "v1.34.9",
+    "namespace": "retail-app",
+    "worker_node_security_group": "sg-0173be3a59950b329"
   },
-  "cluster_name": {
-    "sensitive": false,
-    "type": "string",
-    "value": "project-bedrock-cluster"
-  },
-  "region": {
-    "sensitive": false,
-    "type": "string",
-    "value": "us-east-1"
-  },
-  "vpc_id": {
-    "sensitive": false,
-    "type": "string",
-    "value": "vpc-0884a7a345a7198c8"
-  },
-  "assets_bucket_name": {
-    "sensitive": false,
-    "type": "string",
-    "value": "bedrock-assets-alt-soe-025-4138"
-  }
+  "microservices": [
+    {
+      "name": "ui-service",
+      "type": "Frontend/Router",
+      "container_image": "public.ecr.aws/aws-containers/retail-store-sample-ui:1.5.0",
+      "target_port": 8080,
+      "ingress_type": "LoadBalancer",
+      "external_url": "http://a8990aa0c898f41c6bc83bcb5c0b3e83-2112045155.us-east-1.elb.amazonaws.com"
+    },
+    {
+      "name": "catalog-service",
+      "type": "Backend-API",
+      "container_image": "public.ecr.aws/aws-containers/retail-store-sample-catalog:1.5.0",
+      "database_backend": "Amazon RDS MySQL",
+      "database_host": "rds-mysql-catalog.cahm0saq2dfl.us-east-1.rds.amazonaws.com"
+    },
+    {
+      "name": "orders-service",
+      "type": "Backend-API",
+      "container_image": "public.ecr.aws/aws-containers/retail-store-sample-orders:1.5.0",
+      "database_backend": "Amazon RDS PostgreSQL",
+      "database_host": "rds-postgres-orders.cahm0saq2dfl.us-east-1.rds.amazonaws.com"
+    },
+    {
+      "name": "carts-service",
+      "type": "Backend-API",
+      "container_image": "public.ecr.aws/aws-containers/retail-store-sample-cart:1.5.0",
+      "database_backend": "Amazon DynamoDB",
+      "table_name": "retail-store-carts"
+    }
+  ]
 }
