@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: retail-app
+  labels:
+    Project: karatu-2025-capstone
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bedrock-db-credentials
+  namespace: retail-app
+type: Opaque
+stringData:
+  # Relational Database Master Authentication
+  MYSQL_USER: "catalog_user"
+  MYSQL_PASSWORD: "EnforceSecureBootPass123!"
+  POSTGRES_USER: "orders_user"
+  POSTGRES_PASSWORD: "EnforceSecureBootPass123!"
+  
+  # AWS Programmatic View Profile (Required for DynamoDB & S3 streams)
+  AWS_ACCESS_KEY_ID: ""
+  AWS_SECRET_ACCESS_KEY: ""
+  AWS_REGION: "us-east-1"

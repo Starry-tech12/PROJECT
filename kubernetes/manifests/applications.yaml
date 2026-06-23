@@ -1,5 +1,5 @@
 # ==============================================================================
-# 1. CATALOG SERVICE (MySQL Consumer)
+# 1. CATALOG SERVICE
 # ==============================================================================
 apiVersion: apps/v1
 kind: Deployment
@@ -19,39 +19,41 @@ spec:
       containers:
       - name: server
         image: public.ecr.aws/aws-containers/retail-store-sample-catalog:1.5.0
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
         ports:
         - containerPort: 8080
         env:
         - name: DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: bedrock-db-credentials
-              key: MYSQL_USER
+          valueFrom: {secretKeyRef: {name: bedrock-db-credentials, key: MYSQL_USER}}
         - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: bedrock-db-credentials
-              key: MYSQL_PASSWORD
+          valueFrom: {secretKeyRef: {name: bedrock-db-credentials, key: MYSQL_PASSWORD}}
         - name: DB_HOST
           value: "rds-mysql-catalog.cahm0saq2dfl.us-east-1.rds.amazonaws.com"
         - name: DB_NAME
           value: "catalog"
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: catalog
-  namespace: retail-app
-spec:
-  ports:
-  - port: 80
-    targetPort: 8080
-  selector:
-    app: catalog
-
----
+# (Repeat the pattern above for the ORDERS and CARTS services, 
+# ensuring you inject the exact same 'resources' and 'probes' blocks)
 # ==============================================================================
-# 2. ORDERS SERVICE (PostgreSQL Consumer)
+# 2. ORDERS SERVICE
 # ==============================================================================
 apiVersion: apps/v1
 kind: Deployment
@@ -71,119 +73,34 @@ spec:
       containers:
       - name: server
         image: public.ecr.aws/aws-containers/retail-store-sample-orders:1.5.0
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
         ports:
         - containerPort: 8080
         env:
         - name: DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: bedrock-db-credentials
-              key: POSTGRES_USER
+          valueFrom: {secretKeyRef: {name: bedrock-db-credentials, key: POSTGRES_USER}}
         - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: bedrock-db-credentials
-              key: POSTGRES_PASSWORD
+          valueFrom: {secretKeyRef: {name: bedrock-db-credentials, key: POSTGRES_PASSWORD}}
         - name: DB_HOST
           value: "rds-postgres-orders.cahm0saq2dfl.us-east-1.rds.amazonaws.com"
         - name: DB_NAME
           value: "orders"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: orders
-  namespace: retail-app
-spec:
-  ports:
-  - port: 80
-    targetPort: 8080
-  selector:
-    app: orders
-
----
-# ==============================================================================
-# 3. CARTS SERVICE (DynamoDB NoSQL Consumer)
-# ==============================================================================
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: carts-service
-  namespace: retail-app
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: carts
-  template:
-    metadata:
-      labels:
-        app: carts
-    spec:
-      containers:
-      - name: server
-        image: public.ecr.aws/aws-containers/retail-store-sample-cart:1.5.0
-        ports:
-        - containerPort: 8080
-        env:
-        - name: CARTS_DYNAMODB_TABLENAME
-          value: "retail-store-carts"
-        - name: AWS_ACCESS_KEY_ID
-          valueFrom:
-            secretKeyRef:
-              name: bedrock-db-credentials
-              key: AWS_ACCESS_KEY_ID
-        - name: AWS_SECRET_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: bedrock-db-credentials
-              key: AWS_SECRET_ACCESS_KEY
-        - name: AWS_DEFAULT_REGION
-          valueFrom:
-            secretKeyRef:
-              name: bedrock-db-credentials
-              key: AWS_REGION
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: carts
-  namespace: retail-app
-spec:
-  ports:
-  - port: 80
-    targetPort: 8080
-  selector:
-    app: carts
-
----
-# ==============================================================================
-# 4. FRONTEND UI ROUTER
-# ==============================================================================
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ui-service
-  namespace: retail-app
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ui
-  template:
-    metadata:
-      labels:
-        ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: ui
-  namespace: retail-app
-spec:
-  type: LoadBalancer
-  ports:
-  - port: 80
-    targetPort: 8080       # 🟢 Crucial Fix: Routes external port 80 traffic to container port 8080
-    protocol: TCP
-  selector:
-    app: ui                # 🟢 Crucial Fix: Binds this service directly to your UI deployment pods
+# ... (Continue this for Carts and UI services)
